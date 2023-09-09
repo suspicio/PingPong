@@ -1,5 +1,6 @@
 package com.PingPong.lab1.service;
 
+import com.PingPong.lab1.utils.SingletonInstance;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -29,43 +30,29 @@ public class PingPongService {
 
     private final WebClient webClient;
 
-    private final String apiUrl = "http://localhost:8080";
+    private final String apiUrl = "http://localhost:8081";
 
     @Autowired
     public PingPongService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.clientConnector(new ReactorClientHttpConnector(HttpClient.create(ConnectionProvider.create("extendedPool", 1500)).responseTimeout(Duration.ofSeconds(2)))).exchangeStrategies(ExchangeStrategies.builder()
-                /*.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))*/.build()).codecs(configurer -> configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder())).build();
+                .build()).codecs(configurer -> configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder())).build();
     }
 
     public void Ping() {
         Instant start = Instant.now();
 
-        Mono<Tuple2<ClientResponse, UUID>> responseMono = webClient.post().uri(apiUrl + "/ping").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).bodyValue("").accept(MediaType.APPLICATION_JSON).exchangeToMono(response -> {
-            Mono<UUID> bodyMono = response.bodyToMono(UUID.class);
-            return bodyMono.map(body -> Tuples.of(response, body));
+        String message = "a".repeat(128);
+
+        Mono<String> responseMono = webClient.post().uri(apiUrl + "/pong").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
+                bodyValue(message).accept(MediaType.APPLICATION_JSON).exchangeToMono(response -> {
+            Mono<String> bodyMono = response.bodyToMono(String.class);
+            return bodyMono.map(body -> body);
         }).onErrorResume(Mono::error);
 
         responseMono.subscribe(tuple -> {
-            ClientResponse response = tuple.getT1();
-            UUID uuid = tuple.getT2();
-            HttpStatusCode statusCode = response.statusCode();
+            System.out.println(tuple);
             Duration duration = Duration.between(start, Instant.now());
-        });
-    }
-
-    public void Pong() {
-        Instant start = Instant.now();
-
-        Mono<Tuple2<ClientResponse, UUID>> responseMono = webClient.post().uri(apiUrl + "/pong").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).bodyValue("").accept(MediaType.APPLICATION_JSON).exchangeToMono(response -> {
-            Mono<UUID> bodyMono = response.bodyToMono(UUID.class);
-            return bodyMono.map(body -> Tuples.of(response, body));
-        }).onErrorResume(Mono::error);
-
-        responseMono.subscribe(tuple -> {
-            ClientResponse response = tuple.getT1();
-            UUID uuid = tuple.getT2();
-            HttpStatusCode statusCode = response.statusCode();
-            Duration duration = Duration.between(start, Instant.now());
+            SingletonInstance.timeSpans.add(duration);
         });
     }
 }
