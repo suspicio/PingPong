@@ -20,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -43,36 +44,73 @@ public class PingPongService {
 
     public void writeData() throws IOException {
 
-            // Create a File object
-            String filePath = "data.txt";
-            File file = new File(filePath);
+        // Create a File object
+        String filePath = "data.txt";
+        File file = new File(filePath);
 
-            // Create a FileWriter object with append mode (true) or overwrite mode (false)
-            FileWriter fileWriter = new FileWriter(file, false); // Set to true for append mode
+        // Create a FileWriter object with append mode (true) or overwrite mode (false)
+        FileWriter fileWriter = new FileWriter(file, false); // Set to true for append mode
 
-            // Create a BufferedWriter for efficient writing
-            BufferedWriter writer = new BufferedWriter(fileWriter);
+        // Create a BufferedWriter for efficient writing
+        BufferedWriter writer = new BufferedWriter(fileWriter);
 
-            StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 
-            // Iterate through the ArrayList and convert each Duration to a string
-            for (Duration duration : SingletonInstance.timeSpans) {
-                // Convert the duration to a string in the format "PT1H30M" (for example)
-                String durationString = Long.toString(duration.toMillis());
+        // Iterate through the ArrayList and convert each Duration to a string
+        for (Long duration : SingletonInstance.timeSpans) {
+            // Convert the duration to a string in the format "PT1H30M" (for example)
+            String durationString = Long.toString(duration);
 
-                // Append the duration string followed by a newline character
-                stringBuilder.append(durationString).append("\n");
-            }
+            // Append the duration string followed by a newline character
+            stringBuilder.append(durationString).append("\n");
+        }
 
-            // Write data to the file
-            writer.write(stringBuilder.toString());
+        // Sort the latency data in ascending order
+        Collections.sort(SingletonInstance.timeSpans);
 
-            // Close the BufferedWriter to flush and close the file
-            writer.close();
+        // Compute average latency
+        double average = SingletonInstance.timeSpans.stream().mapToLong(Long::longValue).average().orElse(0.0);
 
-            System.out.println("Data has been written to the file successfully.");
+        // Compute median latency
+        long median;
+        int dataSize = SingletonInstance.timeSpans.size();
+        if (dataSize % 2 == 0) {
+            median = (SingletonInstance.timeSpans.get(dataSize / 2 - 1) + SingletonInstance.timeSpans.get(dataSize / 2)) / 2;
+        } else {
+            median = SingletonInstance.timeSpans.get(dataSize / 2);
+        }
 
-            startPing();
+        // Compute 99th percentile latency
+        int percentile99Index = (int) Math.ceil(0.99 * dataSize) - 1;
+        long percentile99 = SingletonInstance.timeSpans.get(percentile99Index);
+
+        // Compute 99.9th percentile latency
+        int percentile999Index = (int) Math.ceil(0.999 * dataSize) - 1;
+        long percentile999 = SingletonInstance.timeSpans.get(percentile999Index);
+
+        System.out.println("Average Latency: " + average);
+        System.out.println("Median Latency: " + median);
+        System.out.println("99th Percentile Latency: " + percentile99);
+        System.out.println("99.9th Percentile Latency: " + percentile999);
+
+
+        stringBuilder.append("Average Latency: ").append(average).append("\n");
+        stringBuilder.append("Median Latency: ").append(median).append("\n");
+        stringBuilder.append("99th Percentile Latency: ").append(percentile99).append("\n");
+        stringBuilder.append("99.9th Percentile Latency: ").append(percentile999).append("\n");
+
+
+        // Write data to the file
+        writer.write(stringBuilder.toString());
+
+        // Close the BufferedWriter to flush and close the file
+        writer.close();
+
+        SingletonInstance.timeSpans.clear();
+
+        System.out.println("Data has been written to the file successfully.");
+
+        startPing();
     }
 
     public void ping(int left) {
@@ -82,13 +120,13 @@ public class PingPongService {
 
         Mono<String> responseMono = webClient.post().uri("/pong").header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).
                 bodyValue(message).accept(MediaType.APPLICATION_JSON).exchangeToMono(response -> {
-            Mono<String> bodyMono = response.bodyToMono(String.class);
-            return bodyMono.map(body -> body);
-        }).onErrorResume(Mono::error);
+                    Mono<String> bodyMono = response.bodyToMono(String.class);
+                    return bodyMono.map(body -> body);
+                }).onErrorResume(Mono::error);
 
         responseMono.subscribe(tuple -> {
             Duration duration = Duration.between(start, Instant.now());
-            SingletonInstance.timeSpans.add(duration);
+            SingletonInstance.timeSpans.add(duration.toMillis());
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 // Call your function here
                 if (left > 0) {
