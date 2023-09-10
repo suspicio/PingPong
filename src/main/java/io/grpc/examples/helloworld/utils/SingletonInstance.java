@@ -1,6 +1,5 @@
-package com.PingPong.lab1.utils;
+package io.grpc.examples.helloworld.utils;
 
-import java.time.Duration;
 import java.util.ArrayList;
 
 public class SingletonInstance {
