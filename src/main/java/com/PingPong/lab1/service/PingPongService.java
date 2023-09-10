@@ -26,7 +26,7 @@ public class PingPongService {
 
     private final WebClient webClient;
 
-    private final String apiUrl = "http://localhost:8081";
+    private final String apiUrl = "172.178.104.125";
 
     @Autowired
     public PingPongService(WebClient.Builder webClientBuilder) {
