@@ -2,37 +2,19 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@io_grpc_grpc_java//:java_grpc_library.bzl", "java_grpc_library")
 
 proto_library(
-    name = "helloworld_proto",
-    srcs = ["src/main/proto/helloworld.proto"],
+    name = "database_proto",
+    srcs = ["src/main/proto/database.proto"],
 )
 
 java_proto_library(
-    name = "helloworld_java_proto",
-    deps = [":helloworld_proto"],
+    name = "database_java_proto",
+    deps = [":database_proto"],
 )
 
 java_grpc_library(
-    name = "helloworld_java_grpc",
-    srcs = [":helloworld_proto"],
-    deps = [":helloworld_java_proto"],
-)
-
-proto_library(
-    name = "hello_streaming_proto",
-    srcs = [
-        "src/main/proto/hello_streaming.proto",
-    ],
-)
-
-java_proto_library(
-    name = "hello_streaming_java_proto",
-    deps = [":hello_streaming_proto"],
-)
-
-java_grpc_library(
-    name = "hello_streaming_java_grpc",
-    srcs = [":hello_streaming_proto"],
-    deps = [":hello_streaming_java_proto"],
+    name = "database_java_grpc",
+    srcs = [":database_proto"],
+    deps = [":database_java_proto"],
 )
 
 proto_library(
@@ -53,7 +35,7 @@ java_grpc_library(
 
 proto_library(
     name = "echo_proto",
-    srcs = ["src/main/proto/grpc/examples/echo/echo.proto"],
+    srcs = ["src/main/proto/grpc/leaderless/echo/echo.proto"],
 )
 
 java_proto_library(
@@ -68,7 +50,7 @@ java_grpc_library(
 )
 
 java_library(
-    name = "examples",
+    name = "leaderless",
     testonly = 1,
     srcs = glob(
         ["src/main/java/**/*.java"],
@@ -107,137 +89,20 @@ java_library(
 )
 
 java_binary(
-    name = "hello-world-client",
+    name = "benchmark-client",
     testonly = 1,
-    main_class = "io.grpc.examples.helloworld.HelloWorldClient",
+    main_class = "io.grpc.leaderless.BenchmarkClient",
     runtime_deps = [
-        ":examples",
+        ":leaderless",
     ],
 )
 
 java_binary(
-    name = "hello-world-server",
+    name = "db-server",
     testonly = 1,
-    main_class = "io.grpc.examples.helloworld.HelloWorldServer",
+    main_class = "io.grpc.leaderless.DBServer",
     runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "route-guide-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.routeguide.RouteGuideClient",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "route-guide-server",
-    testonly = 1,
-    main_class = "io.grpc.examples.routeguide.RouteGuideServer",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "manual-flow-control-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.manualflowcontrol.ManualFlowControlClient",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "manual-flow-control-server",
-    testonly = 1,
-    main_class = "io.grpc.examples.manualflowcontrol.ManualFlowControlServer",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "load-balance-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.loadbalance.LoadBalanceClient",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "load-balance-server",
-    testonly = 1,
-    main_class = "io.grpc.examples.loadbalance.LoadBalanceServer",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "custom-load-balance-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.customloadbalance.CustomLoadBalanceClient",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "name-resolve-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.nameresolve.NameResolveClient",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "name-resolve-server",
-    testonly = 1,
-    main_class = "io.grpc.examples.nameresolve.NameResolveServer",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "deadline-server",
-    testonly = 1,
-    main_class = "io.grpc.examples.deadline.DeadlineServer",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "deadline-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.deadline.DeadlineClient",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "healthservice-server",
-    testonly = 1,
-    main_class = "io.grpc.examples.healthservice.HealthServiceServer",
-    runtime_deps = [
-        ":examples",
-    ],
-)
-
-java_binary(
-    name = "healthservice-client",
-    testonly = 1,
-    main_class = "io.grpc.examples.healthservice.HealthServiceClient",
-    runtime_deps = [
-        ":examples",
+        ":leaderless",
     ],
 )
 

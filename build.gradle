@@ -1,5 +1,5 @@
 plugins {
-    // Provide convenience executables for trying out the examples.
+    // Provide convenience executables for trying out the leaderless.
     id 'application'
     id 'com.google.protobuf' version '0.9.4'
     // Generate IntelliJ IDEA's .idea & .iml project files
@@ -33,14 +33,14 @@ dependencies {
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     compileOnly "org.apache.tomcat:annotations-api:6.0.53"
 
-    // examples/advanced need this for JsonFormat
+    // leaderless/advanced need this for JsonFormat
     implementation "com.google.protobuf:protobuf-java-util:${protobufVersion}"
 
     runtimeOnly "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testImplementation "junit:junit:4.13.2"
-    testImplementation "org.mockito:mockito-core:3.4.0"
+    testImplementation 'org.mockito:mockito-core:5.2.0'
 }
 
 protobuf {
@@ -67,7 +67,7 @@ startScripts.enabled = false
 
 // Creates start scripts for a class name and adds it to the distribution. The
 // base class name is used to name the task and scripts. For example, passed
-// the class io.grpc.examples.helloworld.HelloWorldClient, it creates the task
+// the class io.grpc.leaderless.helloworld.HelloWorldClient, it creates the task
 // helloWorldClient with script name hello-world-client.
 def createStartScripts(String mainClassName) {
     String bareName = mainClassName.substring(mainClassName.lastIndexOf('.') + 1);
@@ -86,5 +86,5 @@ def createStartScripts(String mainClassName) {
     }
 }
 
-createStartScripts('io.grpc.examples.helloworld.HelloWorldClient')
-createStartScripts('io.grpc.examples.helloworld.HelloWorldServer')
+createStartScripts('io.grpc.leaderless.database.HelloWorldClient')
+createStartScripts('io.grpc.leaderless.database.HelloWorldServer')

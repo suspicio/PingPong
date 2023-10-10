@@ -1,36 +1,36 @@
-gRPC Examples
+gRPC Leaderless
 ==============================================
 
-The examples require `grpc-java` to already be built. You are strongly encouraged
+The leaderless require `grpc-java` to already be built. You are strongly encouraged
 to check out a git release tag, since there will already be a build of gRPC
 available. Otherwise you must follow [COMPILING](../COMPILING.md).
 
 You may want to read through the
 [Quick Start](https://grpc.io/docs/languages/java/quickstart)
-before trying out the examples.
+before trying out the leaderless.
 
-## Basic examples
+## Basic leaderless
 
-- [Hello world](../../../lab1/src/main/java/io/grpc/examples/helloworld)
+- [Hello world](../../../lab1/src/main/java/io/grpc/leaderless/helloworld)
 
-- [Route guide](../../../lab1/src/main/java/io/grpc/examples/routeguide)
+- [Route guide](../../../lab1/src/main/java/io/grpc/leaderless/routeguide)
 
-- [Metadata](../../../lab1/src/main/java/io/grpc/examples/header)
+- [Metadata](../../../lab1/src/main/java/io/grpc/leaderless/header)
 
-- [Error handling](../../../lab1/src/main/java/io/grpc/examples/errorhandling)
+- [Error handling](../../../lab1/src/main/java/io/grpc/leaderless/errorhandling)
 
-- [Compression](../../../lab1/src/main/java/io/grpc/examples/experimental)
+- [Compression](../../../lab1/src/main/java/io/grpc/leaderless/experimental)
 
-- [Flow control](../../../lab1/src/main/java/io/grpc/examples/manualflowcontrol)
+- [Flow control](../../../lab1/src/main/java/io/grpc/leaderless/manualflowcontrol)
 
-- [Wait For Ready](../../../lab1/src/main/java/io/grpc/examples/waitforready)
+- [Wait For Ready](../../../lab1/src/main/java/io/grpc/leaderless/waitforready)
 
-- [Json serialization](../../../lab1/src/main/java/io/grpc/examples/advanced)
+- [Json serialization](../../../lab1/src/main/java/io/grpc/leaderless/advanced)
 
 - <details>
   <summary>Hedging</summary>
 
-  The [hedging example](../../../lab1/src/main/java/io/grpc/examples/hedging) demonstrates that enabling hedging
+  The [hedging example](../../../lab1/src/main/java/io/grpc/leaderless/hedging) demonstrates that enabling hedging
   can reduce tail latency. (Users should note that enabling hedging may introduce other overhead;
   and in some scenarios, such as when some server resource gets exhausted for a period of time and
   almost every RPC during that time has high latency or fails, hedging may make things worse.
@@ -38,7 +38,7 @@ before trying out the examples.
   inappropriate retry or hedging requests.)
 
   The server and the client in the example are basically the same as those in the
-  [hello world](../../../lab1/src/main/java/io/grpc/examples/helloworld) example, except that the server mimics a
+  [hello world](../../../lab1/src/main/java/io/grpc/leaderless/helloworld) example, except that the server mimics a
   long tail of latency, and the client sends 2000 requests and can turn on and off hedging.
 
   To mimic the latency, the server randomly delays the RPC handling by 2 seconds at 10% chance, 5
@@ -67,7 +67,7 @@ before trying out the examples.
   ========================
   ```
 
-  See [the section below](#to-build-the-examples) for how to build and run the example. The
+  See [the section below](#to-build-the-leaderless) for how to build and run the example. The
   executables for the server and the client are `hedging-hello-world-server` and
   `hedging-hello-world-client`.
 
@@ -92,28 +92,28 @@ before trying out the examples.
 - <details>
   <summary>Retrying</summary>
 
-  The [retrying example](../../../lab1/src/main/java/io/grpc/examples/retrying) provides a HelloWorld gRPC client &
+  The [retrying example](../../../lab1/src/main/java/io/grpc/leaderless/retrying) provides a HelloWorld gRPC client &
   server which demos the effect of client retry policy configured on the [ManagedChannel](
   ../api/src/main/java/io/grpc/ManagedChannel.java) via [gRPC ServiceConfig](
   https://github.com/grpc/grpc/blob/master/doc/service_config.md). Retry policy implementation &
   configuration details are outlined in the [proposal](https://github.com/grpc/proposal/blob/master/A6-client-retries.md).
 
-  This retrying example is very similar to the [hedging example](../../../lab1/src/main/java/io/grpc/examples/hedging) in its setup.
-  The [RetryingHelloWorldServer](../../../lab1/src/main/java/io/grpc/examples/retrying/RetryingHelloWorldServer.java) responds with
+  This retrying example is very similar to the [hedging example](../../../lab1/src/main/java/io/grpc/leaderless/hedging) in its setup.
+  The [RetryingHelloWorldServer](../../../lab1/src/main/java/io/grpc/leaderless/retrying/RetryingHelloWorldServer.java) responds with
   a status UNAVAILABLE error response to a specified percentage of requests to simulate server resource exhaustion and
-  general flakiness. The [RetryingHelloWorldClient](../../../lab1/src/main/java/io/grpc/examples/retrying/RetryingHelloWorldClient.java) makes
+  general flakiness. The [RetryingHelloWorldClient](../../../lab1/src/main/java/io/grpc/leaderless/retrying/RetryingHelloWorldClient.java) makes
   a number of sequential requests to the server, several of which will be retried depending on the configured policy in
-  [retrying_service_config.json](../../../lab1/src/main/resources/io/grpc/examples/retrying/retrying_service_config.json). Although
+  [retrying_service_config.json](../../../lab1/src/main/resources/io/grpc/leaderless/retrying/retrying_service_config.json). Although
   the requests are blocking unary calls for simplicity, these could easily be changed to future unary calls in order to
   test the result of request concurrency with retry policy enabled.
 
-  One can experiment with the [RetryingHelloWorldServer](../../../lab1/src/main/java/io/grpc/examples/retrying/RetryingHelloWorldServer.java)
+  One can experiment with the [RetryingHelloWorldServer](../../../lab1/src/main/java/io/grpc/leaderless/retrying/RetryingHelloWorldServer.java)
   failure conditions to simulate server throttling, as well as alter policy values in the [retrying_service_config.json](
-  ../../../lab1/src/main/resources/io/grpc/examples/retrying/retrying_service_config.json) to see their effects. To disable retrying
+  ../../../lab1/src/main/resources/io/grpc/leaderless/retrying/retrying_service_config.json) to see their effects. To disable retrying
   entirely, set environment variable `DISABLE_RETRYING_IN_RETRYING_EXAMPLE=true` before running the client.
   Disabling the retry policy should produce many more failed gRPC calls as seen in the output log.
 
-  See [the section below](#to-build-the-examples) for how to build and run the example. The
+  See [the section below](#to-build-the-leaderless) for how to build and run the example. The
   executables for the server and the client are `retrying-hello-world-server` and
   `retrying-hello-world-client`.
 
@@ -122,7 +122,7 @@ before trying out the examples.
 - <details>
   <summary>Health Service</summary>
 
-  The [health service example](../../../lab1/src/main/java/io/grpc/examples/healthservice)
+  The [health service example](../../../lab1/src/main/java/io/grpc/leaderless/healthservice)
   provides a HelloWorld gRPC server that doesn't like short names along with a
   health service.  It also provides a client application which makes HelloWorld 
   calls and checks the health status.  
@@ -133,32 +133,32 @@ before trying out the examples.
 </details>
 
 
-- [Keep Alive](../../../lab1/src/main/java/io/grpc/examples/keepalive)
+- [Keep Alive](../../../lab1/src/main/java/io/grpc/leaderless/keepalive)
 
-### <a name="to-build-the-examples"></a> To build the examples
+### <a name="to-build-the-leaderless"></a> To build the leaderless
 
 1. **[Install gRPC Java library SNAPSHOT locally, including code generation plugin](../COMPILING.md) (Only need this step for non-released versions, e.g. master HEAD).**
 
-2. From grpc-java/examples directory:
+2. From grpc-java/leaderless directory:
 ```
 $ ./gradlew installDist
 ```
 
 This creates the scripts `hello-world-server`, `hello-world-client`,
 `route-guide-server`, `route-guide-client`, etc. in the
-`build/install/examples/bin/` directory that run the examples. Each
+`build/install/leaderless/bin/` directory that run the leaderless. Each
 example requires the server to be running before starting the client.
 
 For example, to try the hello world example first run:
 
 ```
-$ ./build/install/examples/bin/hello-world-server
+$ ./build/install/leaderless/bin/hello-world-server
 ```
 
 And in a different terminal window run:
 
 ```
-$ ./build/install/examples/bin/hello-world-client
+$ ./build/install/leaderless/bin/hello-world-client
 ```
 
 That's it!
@@ -175,9 +175,9 @@ If you prefer to use Maven:
 ```
 $ mvn verify
 $ # Run the server
-$ mvn exec:java -Dexec.mainClass=io.grpc.examples.helloworld.HelloWorldServer
+$ mvn exec:java -Dexec.mainClass=io.grpc.leaderless.DBServer
 $ # In another terminal run the client
-$ mvn exec:java -Dexec.mainClass=io.grpc.examples.helloworld.HelloWorldClient
+$ mvn exec:java -Dexec.mainClass=io.grpc.leaderless.BenchmarkClient
 ```
 
 ### Bazel
@@ -191,31 +191,31 @@ $ # In another terminal run the client
 $ bazel-bin/hello-world-client
 ```
 
-## Other examples
+## Other leaderless
 
-- [Android examples](android)
+- [Android leaderless](android)
 
-- Secure channel examples
+- Secure channel leaderless
 
-  + [TLS examples](example-tls)
+  + [TLS leaderless](example-tls)
 
-  + [ALTS examples](example-alts)
+  + [ALTS leaderless](example-alts)
 
 - [Google Authentication](example-gauth)
 
 - [JWT-based Authentication](example-jwt-auth)
 
-- [Pre-serialized messages](../../../lab1/src/main/java/io/grpc/examples/preserialized)
+- [Pre-serialized messages](../../../lab1/src/main/java/io/grpc/leaderless/preserialized)
 
-## Unit test examples
+## Unit test leaderless
 
-Examples for unit testing gRPC clients and servers are located in [examples/src/test](../../../lab1/src/test).
+leaderless for unit testing gRPC clients and servers are located in [leaderless/src/test](../../../lab1/src/test).
 
 In general, we DO NOT allow overriding the client stub and we DO NOT support mocking final methods
 in gRPC-Java library. Users should be cautious that using tools like PowerMock or
 [mockito-inline](https://search.maven.org/search?q=g:org.mockito%20a:mockito-inline) can easily
 break this rule of thumb. We encourage users to leverage `InProcessTransport` as demonstrated in the
-examples to write unit tests. `InProcessTransport` is light-weight and runs the server
+leaderless to write unit tests. `InProcessTransport` is light-weight and runs the server
 and client in the same process without any socket/TCP connection.
 
 Mocking the client stub provides a false sense of security when writing tests. Mocking stubs and responses
@@ -245,6 +245,6 @@ The gRPC-java library also provides a JUnit rule,
 [GrpcCleanupRule](../testing/src/main/java/io/grpc/testing/GrpcCleanupRule.java), to do the graceful
 shutdown boilerplate for you.
 
-## Even more examples
+## Even more leaderless
 
-A wide variety of third-party examples can be found [here](https://github.com/saturnism/grpc-java-by-example).
+A wide variety of third-party leaderless can be found [here](https://github.com/saturnism/grpc-java-by-example).

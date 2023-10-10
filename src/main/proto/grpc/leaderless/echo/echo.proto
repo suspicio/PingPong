@@ -18,12 +18,12 @@
 
 syntax = "proto3";
 
-option go_package = "google.golang.org/grpc/examples/features/proto/echo";
+option go_package = "google.golang.org/grpc/leaderless/features/proto/echo";
 option java_multiple_files = true;
-option java_package = "io.grpc.examples.echo";
+option java_package = "io.grpc.leaderless.echo";
 option java_outer_classname = "EchoProto";
 
-package grpc.examples.echo;
+package grpc.leaderless.echo;
 
 // EchoRequest is the request for echo.
 message EchoRequest {

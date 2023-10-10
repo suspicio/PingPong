@@ -14,24 +14,54 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "io.grpc.examples.manualflowcontrol";
-option java_outer_classname = "HelloStreamingProto";
-option objc_class_prefix = "HLWS";
+option java_package = "io.grpc.leaderless.database";
+option java_outer_classname = "DatabaseProto";
+option objc_class_prefix = "DB";
 
-package manualflowcontrol;
+package database;
 
 // The greeting service definition.
-service StreamingGreeter {
-  // Streams a many greetings
-  rpc SayHelloStreaming (stream HelloRequest) returns (stream HelloReply) {}
+service DatabaseRequests {
+  // Sends a greeting
+  rpc Get (GetRequest) returns (GetReply) {}
+  rpc Create (CreateRequest) returns (CreateReply) {}
+  rpc Update (UpdateRequest) returns (UpdateReply) {}
+  rpc Delete (DeleteRequest) returns (DeleteReply) {}
 }
 
 // The request message containing the user's name.
-message HelloRequest {
+message GetRequest {
+  string name = 1;
+}
+
+message CreateRequest {
+  string name = 1;
+  string data = 2;
+}
+
+message UpdateRequest {
+  string name = 1;
+  string data = 2;
+}
+
+message DeleteRequest {
   string name = 1;
 }
 
 // The response message containing the greetings
-message HelloReply {
-  string message = 1;
+message GetReply {
+  string name = 1;
+  string data = 2;
+}
+
+message CreateReply {
+  bool created = 1;
+}
+
+message UpdateReply {
+  bool updated = 1;
+}
+
+message DeleteReply {
+  bool deleted = 1;
 }
