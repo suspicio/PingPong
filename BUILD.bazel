@@ -89,33 +89,6 @@ java_library(
 )
 
 java_binary(
-    name = "benchmark-client",
-    testonly = 1,
-    main_class = "io.grpc.leaderless.BenchmarkClient",
-    runtime_deps = [
-        ":leaderless",
-    ],
-)
-
-java_binary(
-    name = "benchmark-client",
-    testonly = 1,
-    main_class = "io.grpc.leaderless.Client",
-    runtime_deps = [
-        ":leaderless",
-    ],
-)
-
-java_binary(
-    name = "benchmark-client",
-    testonly = 1,
-    main_class = "io.grpc.leaderless.Coordinator",
-    runtime_deps = [
-        ":leaderless",
-    ],
-)
-
-java_binary(
     name = "db-server",
     testonly = 1,
     main_class = "io.grpc.leaderless.DBServer",
