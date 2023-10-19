@@ -1,92 +1,79 @@
 package io.grpc.leaderless;
 
-import io.grpc.Channel;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
-import io.grpc.StatusRuntimeException;
-import io.grpc.leaderless.database.*;
-import io.grpc.leaderless.utils.SingletonInstance;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * A simple client that requests a greeting from the {@link DBServer}.
- */
 public class BenchmarkClient {
-  private static final Logger logger = Logger.getLogger(BenchmarkClient.class.getName());
+    private static final Logger logger = Logger.getLogger(BenchmarkClient.class.getName());
+    private static Integer parallelClients = 0;
 
-  private final DatabaseRequestsGrpc.DatabaseRequestsBlockingStub blockingStub;
+    /**
+     * Greet server. If provided, the first element of {@code args} is the name to use in the
+     * greeting. The second argument is the target server.
+     */
+    public static void main(String[] args) throws Exception {
+        // Access a service running on the local machine on port 50051
+        int databaseReplicasCount = 0;
+        int coordinatorsNumber = 1;
+        // Allow passing in the user and target strings as command line arguments
+        if (args.length > 0) {
+            parallelClients = Integer.parseInt(args[0]);
+        }
+        if (args.length > 1) {
+            databaseReplicasCount = Integer.parseInt(args[1]);
+        }
 
-  /** Construct client for accessing HelloWorld server using the existing channel. */
-  public BenchmarkClient(Channel channel) {
-    // 'channel' here is a Channel, not a ManagedChannel, so it is not this code's responsibility to
-    // shut it down.
 
-    // Passing Channels to code makes code easier to test and makes it easier to reuse Channels.
-    blockingStub = DatabaseRequestsGrpc.newBlockingStub(channel);
-  }
+        ArrayList<String> target = new ArrayList<>();
 
-  public void writeData() throws IOException {
-    System.out.println("Data has been written to the file successfully.");
-  }
+        if (args.length > databaseReplicasCount + 2) {
+            coordinatorsNumber = databaseReplicasCount;
+        }
 
+        if (databaseReplicasCount == 0) {
+            target.add("localhost:50051");
+            target.add("localhost:50052");
+            target.add("localhost:50053");
+            databaseReplicasCount = 3;
+        } else {
+            target = new ArrayList<>(Arrays.asList(args).subList(2, databaseReplicasCount + 2));
+        }
+        // Create a communication channel to the server, known as a Channel. Channels are thread-safe
+        // and reusable. It is common to create channels at the beginning of your application and reuse
+        // them until the application shuts down.
+        //
+        // For the example we use plaintext insecure credentials to avoid needing TLS certificates. To
+        // use TLS, use TlsChannelCredentials instead.
+        ArrayList<ManagedChannel> channels = new ArrayList<>();
 
-  /** Say hello to server. */
-  public void greet(Integer left) throws IOException {
-    writeData();
-  }
+        try {
+            for (int i = 0; i < databaseReplicasCount; i++) {
+                channels.add(Grpc.newChannelBuilder(target.get(i), InsecureChannelCredentials.create()).build());
+            }
+            ArrayList<Coordinator> coordinators = new ArrayList<>();
 
-  /**
-   * Greet server. If provided, the first element of {@code args} is the name to use in the
-   * greeting. The second argument is the target server.
-   */
-  public static void main(String[] args) throws Exception {
-    String user = "world";
-    // Access a service running on the local machine on port 50051
-    String target = "4.236.182.54:50051";
-    // Allow passing in the user and target strings as command line arguments
-    if (args.length > 0) {
-      if ("--help".equals(args[0])) {
-        System.err.println("Usage: [name [target]]");
-        System.err.println("");
-        System.err.println("  name    The name you wish to be greeted by. Defaults to " + user);
-        System.err.println("  target  The server to connect to. Defaults to " + target);
-        System.exit(1);
-      }
-      user = args[0];
+            for (int i = 0; i < parallelClients; i++) {
+                final int id = i;
+                new Thread(() -> {
+                    Coordinator coordinator = new Coordinator(channels);
+                    coordinator.setMode("Operations");
+                    coordinator.setOp(10000L);
+                    coordinator.setID(id);
+                    coordinator.run();
+                }).start();
+            }
+        } finally {
+            // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
+            // resources the channel should be shut down when it will no longer be used. If it may be used
+            // again leave it running.
+            //for (ManagedChannel channel : channels)
+              //  channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
+        }
     }
-    if (args.length > 1) {
-      target = args[1];
-    }
-
-    // Create a communication channel to the server, known as a Channel. Channels are thread-safe
-    // and reusable. It is common to create channels at the beginning of your application and reuse
-    // them until the application shuts down.
-    //
-    // For the example we use plaintext insecure credentials to avoid needing TLS certificates. To
-    // use TLS, use TlsChannelCredentials instead.
-    ManagedChannel channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create())
-        .build();
-    try {
-      BenchmarkClient client = new BenchmarkClient(channel);
-      while (true) {
-        client.greet(10000);
-      }
-    } finally {
-      // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
-      // resources the channel should be shut down when it will no longer be used. If it may be used
-      // again leave it running.
-      channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
-    }
-  }
 }

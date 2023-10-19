@@ -25,6 +25,7 @@ import io.grpc.stub.StreamObserver;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -38,7 +39,7 @@ public class DBServer {
 
   private void start() throws IOException {
     /* The port on which the server should run */
-    int port = 50051;
+    int port = 50050 + SingletonInstance.serverID;
     server = Grpc.newServerBuilderForPort(port, InsecureServerCredentials.create())
         .addService(new DatabaseImpl())
         .build()
@@ -79,6 +80,8 @@ public class DBServer {
    */
   public static void main(String[] args) throws IOException, InterruptedException {
     final DBServer server = new DBServer();
+    SingletonInstance.serverID = Integer.parseInt(args[0]);
+    logger.info("Server id: " + args[0]);
     server.start();
     server.blockUntilShutdown();
   }
@@ -88,7 +91,9 @@ public class DBServer {
     @Override
     public void get(GetRequest req, StreamObserver<GetReply> responseObserver) {
       String replyData = SingletonInstance.dbTable.get(req.getName());
-      GetReply reply = GetReply.newBuilder().setName(req.getName()).setData(replyData).build();
+      System.out.println(replyData);
+      GetReply reply;
+      reply = GetReply.newBuilder().setName(req.getName()).setData(Objects.requireNonNullElse(replyData, "")).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
     }
