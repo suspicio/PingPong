@@ -87,4 +87,3 @@ def createStartScripts(String mainClassName) {
 }
 
 createStartScripts('io.grpc.leaderless.BenchmarkClient')
-createStartScripts('io.grpc.leaderless.DBServer')
